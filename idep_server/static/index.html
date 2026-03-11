@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDEP — Instrumento Diagnóstico de Ecosistemas Productivos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0c0e18;--paper:#f4f1e8;--cream:#ece8dc;--accent:#152d4a;
+  --gold:#b8893a;--teal:#1a6e62;--rust:#9e3a2a;--mid:#7a7568;
+  --border:#ccc8bc;--white:#ffffff;--shadow:0 4px 24px rgba(12,14,24,.10);--r:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Source Sans 3',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.6}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+
+.shell{max-width:820px;margin:0 auto;padding:0 1.5rem 5rem}
+
+/* MASTHEAD */
+.masthead{position:relative;padding:3.5rem 3rem 3rem;margin:0 -1.5rem 3rem;background:var(--accent);overflow:hidden}
+.masthead::before{content:'IDEP';position:absolute;right:-1rem;top:-1.5rem;font-family:'Playfair Display',serif;font-size:11rem;font-weight:900;color:rgba(255,255,255,.04);line-height:1;pointer-events:none;user-select:none}
+.masthead::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--teal),var(--gold))}
+.masthead-tag{display:inline-flex;align-items:center;gap:.4rem;background:rgba(184,137,58,.2);border:1px solid rgba(184,137,58,.5);color:#e8c070;font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .8rem;border-radius:100px;margin-bottom:1.25rem}
+.masthead h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(1.8rem,5vw,2.8rem);color:#fff;line-height:1.05;letter-spacing:-.02em;margin-bottom:.75rem}
+.masthead p{color:rgba(255,255,255,.65);font-size:.92rem;font-weight:300;max-width:540px;line-height:1.7}
+
+/* COUNTER BADGE */
+.counter-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(26,110,98,.15);border:1px solid rgba(26,110,98,.4);color:#1a6e62;font-size:.75rem;font-weight:600;padding:.3rem .8rem;border-radius:100px;margin-top:1rem}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:2.5rem}
+.progress-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem}
+.progress-label{font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mid)}
+.progress-count{font-family:'Playfair Display',serif;font-size:.85rem;color:var(--gold);font-weight:700}
+.progress-track{height:6px;background:var(--cream);border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.step-dots{display:flex;gap:.4rem;margin-top:.6rem}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--cream);border:1.5px solid var(--border);transition:all .3s}
+.step-dot.done{background:var(--teal);border-color:var(--teal)}
+.step-dot.active{background:var(--gold);border-color:var(--gold);transform:scale(1.3)}
+
+/* CARDS */
+.section-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.75rem 2rem;margin-bottom:1.25rem;box-shadow:var(--shadow);animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section-eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:.35rem}
+.section-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:.35rem;line-height:1.25}
+.section-desc{font-size:.85rem;color:var(--mid);font-style:italic;line-height:1.65;margin-bottom:1.25rem}
+.ref-strip{background:rgba(26,110,98,.06);border-left:3px solid var(--teal);padding:.6rem .9rem;border-radius:0 6px 6px 0;font-size:.72rem;color:#145f56;line-height:1.75;margin-bottom:1.5rem}
+.ref-strip strong{color:var(--teal)}
+
+/* FIELDS */
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:.8rem;font-weight:600;margin-bottom:.35rem;color:var(--ink)}
+.field label .req{color:var(--rust)}
+.field input,.field select,.field textarea{width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:7px;font-family:'Source Sans 3',sans-serif;font-size:.88rem;color:var(--ink);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(21,45,74,.1)}
+.field textarea{resize:vertical;min-height:88px}
+.field input[disabled]{background:var(--cream);color:var(--mid);cursor:default}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+@media(max-width:580px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.wc{text-align:right;font-size:.7rem;color:var(--mid);margin-top:.2rem;transition:color .2s}
+.wc.over{color:var(--rust);font-weight:700}
+
+/* ACTOR BUTTONS */
+.actor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.7rem;margin-bottom:1rem}
+.actor-btn{display:flex;flex-direction:column;align-items:center;gap:.45rem;padding:1.1rem .75rem;border:2px solid var(--border);border-radius:var(--r);background:#fff;cursor:pointer;transition:all .2s;text-align:center}
+.actor-btn:hover{border-color:var(--accent);background:var(--cream);transform:translateY(-2px)}
+.actor-btn.active{border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(21,45,74,.25);transform:translateY(-2px)}
+.actor-btn .icon{font-size:1.9rem;line-height:1}
+.actor-btn .name{font-size:.75rem;font-weight:600;line-height:1.3}
+
+/* CHIPS */
+.chip-grid{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1rem}
+.chip{padding:.4rem .85rem;border:1.5px solid var(--border);border-radius:100px;font-size:.78rem;cursor:pointer;transition:all .18s;background:#fff;user-select:none;line-height:1.4}
+.chip:hover{border-color:var(--accent);background:var(--cream)}
+.chip.active{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
+.chip.locked{opacity:.38;pointer-events:none}
+.eco-hint{font-size:.78rem;color:var(--mid);font-style:italic;margin-bottom:.75rem}
+
+/* SCALE */
+.q-card{border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1.1rem;background:#fff;transition:border-color .2s}
+.q-card.answered{border-left:4px solid var(--teal)}
+.q-tag{display:inline-block;background:rgba(184,137,58,.12);color:#8a6020;padding:.18rem .55rem;border-radius:4px;font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+.q-text{font-size:.88rem;color:var(--ink);margin-bottom:1rem;line-height:1.65}
+.scale-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.85rem}
+.scale-opt{flex:1;min-width:90px;padding:.45rem .35rem;border:1.5px solid var(--border);border-radius:7px;background:#fff;font-family:'Source Sans 3',sans-serif;font-size:.72rem;text-align:center;cursor:pointer;transition:all .18s;line-height:1.35;color:var(--ink)}
+.scale-opt:hover{border-color:var(--teal);background:rgba(26,110,98,.06)}
+.scale-opt.active{border-color:var(--teal);background:var(--teal);color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(26,110,98,.25)}
+
+/* OPEN QUESTIONS */
+.open-q{margin-bottom:1.5rem}
+.open-q .q-label{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.25rem}
+.open-q .q-sub{font-size:.84rem;color:var(--mid);font-style:italic;margin-bottom:.6rem;line-height:1.6}
+.divider{border:none;border-top:1px solid var(--cream);margin:1.5rem 0}
+
+/* NAVIGATION */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.6rem;border-radius:7px;font-family:'Source Sans 3',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.04em;cursor:pointer;border:none;transition:all .2s;text-transform:uppercase}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#0a1f38;transform:translateY(-1px);box-shadow:0 6px 16px rgba(21,45,74,.3)}
+.btn-secondary{background:transparent;color:var(--mid);border:1.5px solid var(--border)}
+.btn-secondary:hover{border-color:var(--mid);color:var(--ink)}
+.btn-success{background:var(--teal);color:#fff}
+.btn-success:hover{background:#115a4f;transform:translateY(-1px);box-shadow:0 6px 16px rgba(26,110,98,.3)}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:#9a7030;transform:translateY(-1px)}
+.btn:disabled{opacity:.38;pointer-events:none;transform:none!important}
+.nav-step{font-size:.75rem;color:var(--mid)}
+
+/* ALERTS & INFO */
+.alert{background:rgba(158,58,42,.07);border-left:3px solid var(--rust);padding:.6rem .9rem;border-radius:0 6px 6px 0;font-size:.82rem;color:var(--rust);margin-bottom:1rem;display:none}
+.alert.show{display:block}
+.info-box{background:rgba(21,45,74,.06);border-left:3px solid var(--accent);padding:.65rem .9rem;border-radius:0 6px 6px 0;font-size:.82rem;color:var(--accent);margin-top:.75rem;line-height:1.6}
+
+/* SENDING OVERLAY */
+.sending-overlay{display:none;position:fixed;inset:0;background:rgba(12,14,24,.7);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:1rem}
+.sending-overlay.show{display:flex}
+.spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sending-text{color:#fff;font-size:1rem;font-weight:600;letter-spacing:.05em}
+
+/* SUCCESS */
+.success{text-align:center;padding:3.5rem 1rem 2rem;animation:fadeUp .5s ease both}
+.success-icon{font-size:4.5rem;margin-bottom:1rem;display:block}
+.success h2{font-family:'Playfair Display',serif;font-size:2rem;color:var(--teal);margin-bottom:.75rem}
+.success p{color:var(--mid);max-width:480px;margin:0 auto 1.5rem;line-height:1.7;font-size:.95rem}
+.success-actions{display:flex;flex-direction:column;align-items:center;gap:.75rem}
+.success-seq{display:inline-block;background:rgba(26,110,98,.1);border:1px solid var(--teal);color:var(--teal);padding:.4rem 1rem;border-radius:100px;font-size:.85rem;font-weight:700;margin-bottom:1rem}
+
+/* ADMIN PANEL */
+.admin-panel{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem 1.5rem;margin-top:2rem;box-shadow:var(--shadow)}
+.admin-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--accent);font-weight:700;margin-bottom:.75rem}
+.admin-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.count-badge{background:rgba(21,45,74,.08);border:1px solid rgba(21,45,74,.2);color:var(--accent);padding:.4rem 1rem;border-radius:7px;font-size:.85rem;font-weight:700}
+
+/* STEP */
+.step{display:none}
+.step.active{display:block}
+
+/* FOOTER */
+.footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:.72rem;color:var(--mid);line-height:1.9}
+.footer strong{color:var(--ink);font-family:'Playfair Display',serif}
+</style>
+</head>
+<body>
+
+<!-- SENDING OVERLAY -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div class="sending-text">Guardando respuesta en el servidor…</div>
+</div>
+
+<div class="shell">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="masthead-tag">🌐 RED LAB · Interfase / Interfaz de articulación del Ecosistema Productivo Biocultural de Caldas</div>
+    <h1>Instrumento Diagnóstico de<br>Ecosistemas Productivos</h1>
+    <p>Investigación Doctoral en Diseño y Creación — Universidad de Caldas — Minciencias.<br>
+    Responsable: <strong style="color:rgba(255,255,255,.9)">Jorge Enrique González Granados</strong> &nbsp;·&nbsp; Cel. 318 7008400</p>
+    <div class="counter-badge" id="counterBadge">📊 Cargando respuestas…</div>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-meta">
+      <span class="progress-label" id="progressLabel">Paso 1 de 7</span>
+      <span class="progress-count" id="progressCount">Identificación</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:14%"></div></div>
+    <div class="step-dots" id="stepDots"></div>
+  </div>
+
+  <!-- STEP 0 -->
+  <div class="step active" id="step-0">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 1</div>
+      <div class="section-title">📋 Datos de Identificación</div>
+      <p class="section-desc">Complete sus datos personales y de la organización. Esta información es confidencial y de uso exclusivo para el diagnóstico del ecosistema productivo regional.</p>
+      <div class="grid-2">
+        <div class="field"><label>Nombre completo <span class="req">*</span></label><input type="text" id="f_nombre" placeholder="Ej: María García López"></div>
+        <div class="field"><label>Cargo / Rol en la organización</label><input type="text" id="f_cargo" placeholder="Ej: Directora de Innovación"></div>
+        <div class="field"><label>Correo electrónico <span class="req">*</span></label><input type="email" id="f_email" placeholder="correo@organizacion.com"></div>
+        <div class="field"><label>Teléfono / WhatsApp</label><input type="tel" id="f_telefono" placeholder="+57 300 000 0000"></div>
+      </div>
+      <div class="field"><label>Nombre de la organización <span class="req">*</span></label><input type="text" id="f_organizacion" placeholder="Ej: Universidad Industrial de Santander"></div>
+      <div class="grid-3">
+        <div class="field"><label>Ciudad</label><input type="text" id="f_ciudad" placeholder="Ej: Bucaramanga"></div>
+        <div class="field"><label>Departamento / Región</label><input type="text" id="f_departamento" placeholder="Ej: Santander"></div>
+        <div class="field"><label>Fecha</label><input type="text" id="f_fecha" disabled></div>
+      </div>
+      <div class="alert" id="alert-0">⚠ Complete los campos obligatorios: Nombre, Correo y Organización.</div>
+    </div>
+    <div class="nav-row"><span></span><span class="nav-step">1 / 7</span><button class="btn btn-primary" onclick="goNext(0)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step" id="step-1">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 2</div>
+      <div class="section-title">🌀 Tipo de Actor · Modelo de la Quinta Hélice</div>
+      <p class="section-desc">Seleccione el tipo de actor del ecosistema con el que se identifica su organización.</p>
+      <div class="ref-strip"><strong>Ref. Q1/Q2:</strong> Carayannis, E. G., & Campbell, D. F. J. (2010). <em>Int. J. Social Ecology and Sustainable Development, 1</em>(1), 41–69. · Leydesdorff, L. (2012). <em>Journal of the Knowledge Economy, 3</em>, 25–35.</div>
+      <div class="actor-grid">
+        <button class="actor-btn" data-actor="academia" data-label="🎓 Academia / Universidad" onclick="selectActor(this)"><span class="icon">🎓</span><span class="name">Academia / Universidad</span></button>
+        <button class="actor-btn" data-actor="empresa"  data-label="🏭 Empresa / Industria"  onclick="selectActor(this)"><span class="icon">🏭</span><span class="name">Empresa / Industria</span></button>
+        <button class="actor-btn" data-actor="gobierno" data-label="🏛️ Gobierno / Estado"   onclick="selectActor(this)"><span class="icon">🏛️</span><span class="name">Gobierno / Estado</span></button>
+        <button class="actor-btn" data-actor="sociedad" data-label="🌿 Sociedad Civil"       onclick="selectActor(this)"><span class="icon">🌿</span><span class="name">Sociedad Civil / Comunidad</span></button>
+        <button class="actor-btn" data-actor="media"    data-label="📡 Medios / Cultura / TIC" onclick="selectActor(this)"><span class="icon">📡</span><span class="name">Medios / Cultura / TIC</span></button>
+      </div>
+      <div class="alert" id="alert-1">⚠ Seleccione un tipo de actor.</div>
+      <div class="info-box" id="actor-info" style="display:none"></div>
+    </div>
+    <div class="nav-row"><button class="btn btn-secondary" onclick="goPrev(1)">← Anterior</button><span class="nav-step">2 / 7</span><button class="btn btn-primary" onclick="goNext(1)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="step-2">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 3</div>
+      <div class="section-title">🔍 Tipología Específica del Actor</div>
+      <p class="section-desc" id="typology-desc">Seleccione la tipología que mejor describe su organización.</p>
+      <div class="ref-strip"><strong>Ref. Q1/Q2:</strong> Lundvall, B.-Å. (2010). <em>National Systems of Innovation.</em> · Autio, E. et al. (2018). <em>Strategic Entrepreneurship Journal, 12</em>(1), 72–95.</div>
+      <div class="field"><label>Seleccione su tipología <span class="req">*</span></label><select id="f_typology" onchange="typologyChanged()"><option value="">— Seleccione una opción —</option></select></div>
+      <div class="info-box" id="typology-info" style="display:none"></div>
+      <div class="alert" id="alert-2">⚠ Seleccione una tipología.</div>
+    </div>
+    <div class="nav-row"><button class="btn btn-secondary" onclick="goPrev(2)">← Anterior</button><span class="nav-step">3 / 7</span><button class="btn btn-primary" onclick="goNext(2)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step-3">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 4</div>
+      <div class="section-title">🗺️ Ecosistemas Productivos Regionales</div>
+      <p class="section-desc">Identifique en cuáles ecosistemas productivos tiene incidencia su organización (máximo 3).</p>
+      <div class="ref-strip"><strong>Ref. Q1/Q2:</strong> Jacobides, M. G. et al. (2018). <em>Strategic Management Journal, 39</em>(8), 2255–2276. · Granstrand, O., & Holgersson, M. (2020). <em>Technovation, 90–91</em>, 102098.</div>
+      <p class="eco-hint">⚡ Seleccione <strong>máximo 3</strong>. Seleccionados: <span id="ecoCount">0</span>/3</p>
+      <div class="chip-grid" id="ecoChips"></div>
+      <div class="alert" id="alert-3">⚠ Seleccione al menos un ecosistema.</div>
+    </div>
+    <div class="nav-row"><button class="btn btn-secondary" onclick="goPrev(3)">← Anterior</button><span class="nav-step">4 / 7</span><button class="btn btn-primary" onclick="goNext(3)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" id="step-4">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 5</div>
+      <div class="section-title">📊 Estado Actual del Ecosistema Productivo</div>
+      <p class="section-desc">Evalúe los siguientes aspectos. Amplíe con comentarios si lo desea (máx. 200 palabras).</p>
+      <div class="ref-strip"><strong>Ref. Q1/Q2:</strong> Isenberg, D. J. (2011). IIEA. · Stam, E. & Spigel, B. (2018). SAGE Handbook. · Solvell, O. (2015). Ivory Tower.</div>
+      <div id="maturityQuestions"></div>
+      <div class="alert" id="alert-4">⚠ Responda todas las preguntas de escala.</div>
+    </div>
+    <div class="nav-row"><button class="btn btn-secondary" onclick="goPrev(4)">← Anterior</button><span class="nav-step">5 / 7</span><button class="btn btn-primary" onclick="goNext(4)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step" id="step-5">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 6</div>
+      <div class="section-title">🔗 Mapeo de Actores, Cadena de Valor y Gobernanza</div>
+      <p class="section-desc">Evalúe los niveles de suficiencia, articulación y aplicación práctica (máx. 200 palabras por ampliación).</p>
+      <div class="ref-strip"><strong>Ref. Q1/Q2:</strong> Kaplinsky & Morris (2001). IDRC. · Gereffi & Fernandez-Stark (2016). CGGC. · Rhodes, R. A. W. (1996). <em>Political Studies, 44</em>(4).</div>
+      <div id="mappingQuestions"></div>
+      <div class="alert" id="alert-5">⚠ Responda todas las preguntas de escala.</div>
+    </div>
+    <div class="nav-row"><button class="btn btn-secondary" onclick="goPrev(5)">← Anterior</button><span class="nav-step">6 / 7</span><button class="btn btn-primary" onclick="goNext(5)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step" id="step-6">
+    <div class="section-card">
+      <div class="section-eyebrow">Sección 7</div>
+      <div class="section-title">🔬 Diagnóstico de Cadenas Productivas y Necesidades</div>
+      <p class="section-desc">Responda con detalle las siguientes preguntas abiertas (máx. 200 palabras por respuesta).</p>
+      <div class="ref-strip"><strong>Ref. Q1/Q2:</strong> Porter, M. E. (1998). HBR. · Coe, N. M. et al. (2008). <em>Journal of Economic Geography, 8</em>(3). · Uyarra & Flanagan (2010). <em>European Planning Studies, 18</em>(1).</div>
+      <div id="diagnosisQuestions"></div>
+    </div>
+    <div class="nav-row"><button class="btn btn-secondary" onclick="goPrev(6)">← Anterior</button><span class="nav-step">7 / 7</span><button class="btn btn-success" onclick="submitForm()">✓ Enviar respuestas</button></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="step" id="step-success">
+    <div class="success">
+      <span class="success-icon">✅</span>
+      <div class="success-seq" id="successSeq"></div>
+      <h2>¡Formulario completado!</h2>
+      <p>Gracias, <strong id="successName"></strong>. Su respuesta fue guardada en el servidor y consolidada en el archivo Excel junto con las demás respuestas del diagnóstico regional.</p>
+      <div class="success-actions">
+        <button class="btn btn-secondary" onclick="resetForm()">↩ Nueva respuesta</button>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div class="admin-panel">
+      <div class="admin-title">🗄️ Panel de Administración — Datos Consolidados</div>
+      <div class="admin-row">
+        <span class="count-badge" id="adminCount">📊 Cargando…</span>
+        <a class="btn btn-gold" href="/api/download" download>📥 Descargar Excel Consolidado</a>
+      </div>
+      <p style="font-size:.78rem;color:var(--mid);margin-top:.75rem;">
+        El archivo <strong>IDEP_Respuestas_Consolidadas.xlsx</strong> contiene todas las respuestas en una hoja consolidada y una hoja individual por participante.
+      </p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <strong>IDEP — Instrumento Diagnóstico de Ecosistemas Productivos</strong><br>
+    Investigación Doctoral en Innovación y Productividad Regional · Quinta Hélice · 2025<br><br>
+    Carayannis & Campbell (2010) · Jacobides et al. (2018) · Granstrand & Holgersson (2020) · Gereffi & Fernandez-Stark (2016) · Stam (2015) · Autio et al. (2018)
+  </footer>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const API = window.location.origin; // same server
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const TYPOLOGIES = {
+  academia:["Universidad de investigación intensiva (R1)","Universidad docente con grupos de I+D","Instituto tecnológico / Politécnico","Centro de investigación aplicada","Incubadora o aceleradora universitaria","Laboratorio de innovación abierta (fab lab / living lab)","Red académica interinstitucional"],
+  empresa: ["Gran empresa / corporación multinacional","Mediana empresa manufacturera o de servicios","PYME innovadora de base tecnológica","Startup o empresa emergente (scale-up)","Empresa social / cooperativa","Clúster o asociación empresarial sectorial","Empresa tractora de cadena de valor"],
+  gobierno:["Ministerio o secretaría de ciencia, tecnología e innovación","Agencia de desarrollo regional o territorial","Gobierno local / alcaldía / municipio","Entidad regulatoria o de política pública","Fondo de financiamiento público (CONACYT, Minciencias, etc.)","Parque tecnológico o zona económica especial","Corporación de desarrollo económico"],
+  sociedad:["Organización de la sociedad civil (ONG / fundación)","Comunidad indígena o campesina organizada","Asociación de consumidores o usuarios","Red de innovación social y economía solidaria","Sindicato o gremio laboral","Colectivo ciudadano de innovación participativa","Organismo multilateral / cooperación internacional"],
+  media:   ["Plataforma digital o ecosistema de datos abiertos","Medio de comunicación especializado en innovación","Red social / comunidad en línea de práctica","Centro de inteligencia artificial o cómputo avanzado","Empresa de telecomunicaciones o proveedor TIC","Organización de gestión del conocimiento y vigilancia tecnológica","Consorcio de transferencia tecnológica y propiedad intelectual"],
+};
+const ECOSYSTEMS=["Ecosistema agroindustrial y bioeconomía","Ecosistema de manufactura avanzada e industria 4.0","Ecosistema de tecnologías de información y software","Ecosistema de energías renovables y transición energética","Ecosistema de salud, farmacéutica y biotecnología","Ecosistema de turismo sostenible y economía creativa","Ecosistema de logística, transporte y cadena de suministro","Ecosistema minero-energético y recursos naturales","Ecosistema de construcción, infraestructura y ciudades inteligentes","Ecosistema de economía circular y gestión ambiental","Ecosistema financiero y fintech","Ecosistema educativo y edtech","Ecosistema de defensa, seguridad y tecnologías duales","Ecosistema de textil, moda y diseño industrial","Ecosistema de alimentos funcionales y nutrición"];
+const MATURITY_QS=[
+  {id:"m1",label:"Madurez del ecosistema",q:"¿Cómo evalúa el nivel de madurez general del ecosistema productivo regional en términos de capacidades instaladas, infraestructura y trayectoria de desarrollo?",hint:"Piense en ejemplos concretos: ¿qué instituciones, infraestructuras o procesos ya existen en Caldas? ¿Cuáles están en construcción? ¿Qué falta aún por consolidar en el territorio?",scale:["1 – Incipiente","2 – En formación","3 – En desarrollo","4 – Consolidado","5 – Avanzado/Líder"]},
+  {id:"m2",label:"Competitividad sistémica",q:"¿En qué medida considera que el ecosistema regional es competitivo frente a ecosistemas equivalentes a nivel nacional e internacional?",hint:"Mencione ventajas comparativas del territorio de Caldas (recursos, talento, ubicación, tradición productiva) y los principales factores que limitan su competitividad frente a otras regiones del país.",scale:["1 – Muy baja","2 – Baja","3 – Media","4 – Alta","5 – Muy alta"]},
+  {id:"m3",label:"Articulación inter-actores",q:"¿Qué tan efectiva es la articulación entre los diferentes actores del ecosistema (academia, empresa, gobierno, sociedad civil y medios/TIC)?",hint:"Describa si existen espacios formales o informales de coordinación. ¿Hay mesas de trabajo, comités, redes o alianzas activas en el ecosistema? ¿Quiénes participan y quiénes quedan excluidos?",scale:["1 – Nula","2 – Escasa","3 – Parcial","4 – Frecuente","5 – Sistémica"]},
+  {id:"m4",label:"Capacidad de innovación",q:"¿Cómo valora la capacidad del ecosistema para generar, adoptar y escalar innovaciones de producto, proceso, organización o mercado?",hint:"Comparta ejemplos de innovaciones recientes en el ecosistema biocultural de Caldas. ¿Existen convocatorias o fondos que apoyen la innovación? ¿Qué barreras impiden que las ideas lleguen al mercado o al territorio?",scale:["1 – Muy limitada","2 – Limitada","3 – Moderada","4 – Sólida","5 – Excelente"]},
+  {id:"m5",label:"Gobernanza del ecosistema",q:"¿Existe una gobernanza clara y legítima que facilite la toma de decisiones colectivas, la gestión de conflictos y la orientación estratégica del ecosistema?",hint:"Identifique quién o quiénes lideran la toma de decisiones en el ecosistema. ¿Hay acuerdos formales, planes estratégicos compartidos o mecanismos de rendición de cuentas entre los actores del territorio?",scale:["1 – Inexistente","2 – Informal/Débil","3 – Emergente","4 – Funcional","5 – Institucionalizada"]},
+  {id:"m6",label:"Sostenibilidad e impacto territorial",q:"¿En qué medida las actividades del ecosistema generan impacto positivo, sostenible y equitativo en el territorio regional?",hint:"Reflexione sobre los beneficios reales que el ecosistema genera para comunidades locales, medio ambiente y culturas del territorio de Caldas. ¿Quiénes se benefician? ¿Qué grupos o comunidades quedan al margen?",scale:["1 – Sin impacto","2 – Impacto puntual","3 – Impacto moderado","4 – Impacto significativo","5 – Impacto transformador"]},
+];
+const MAPPING_QS=[
+  {id:"map1",label:"Suficiencia del mapeo de actores",q:"¿Considera que existe información suficiente, actualizada y accesible sobre los actores que conforman el ecosistema productivo regional?",hint:"Piense: ¿existe un directorio, mapa o registro actualizado de actores del ecosistema en Caldas? ¿Sabe usted quiénes son todos los actores relevantes, dónde están y qué hacen? ¿Esa información es pública y fácil de consultar?",scale:["1 – Tot. insuficiente","2 – Insuficiente","3 – Parcialmente suficiente","4 – Suficiente","5 – Muy completa"]},
+  {id:"map2",label:"Articulación en la cadena de valor",q:"¿Qué tan articulados están los eslabones de la cadena de valor regional (proveedores, productores, transformadores, distribuidores, consumidores finales)?",hint:"Describa cómo fluyen los productos, servicios o conocimientos entre los diferentes eslabones. ¿Hay eslabones débiles o desconectados? ¿Qué oportunidades de integración identifica en la cadena productiva de Caldas?",scale:["1 – Desarticulados","2 – Vínculos esporádicos","3 – Vínculos parciales","4 – Bien articulados","5 – Tot. integrados"]},
+  {id:"map3",label:"Aplicación práctica en proyectos",q:"¿En qué medida el conocimiento sobre el ecosistema se traduce en proyectos concretos de mejora de competitividad, productividad o innovación?",hint:"Mencione proyectos, iniciativas o programas que hayan surgido del trabajo colaborativo entre actores del ecosistema. ¿Qué resultados concretos han generado? ¿Qué impidió que otras ideas se convirtieran en proyectos reales?",scale:["1 – Sin aplicación","2 – Esporádica","3 – Parcial","4 – Sistemática","5 – Integración estratégica"]},
+  {id:"map4",label:"Diagnóstico de gobernanza",q:"¿Existen mecanismos formales o informales de diagnóstico continuo de la gobernanza del ecosistema que permitan identificar brechas y tomar decisiones informadas?",hint:"¿Se realizan evaluaciones periódicas sobre cómo funciona la coordinación entre actores? ¿Hay estudios, informes o espacios de reflexión colectiva sobre la gobernanza del ecosistema productivo biocultural de Caldas?",scale:["1 – No existen","2 – Muy limitados","3 – Parcialmente presentes","4 – Presentes y funcionales","5 – Robustos y sistemáticos"]},
+  {id:"map5",label:"Flujos de información y conocimiento",q:"¿Cómo evalúa la calidad y fluidez de los flujos de información y conocimiento entre los actores del ecosistema para la toma de decisiones colaborativas?",hint:"¿Cómo se comparte la información entre actores del ecosistema? ¿Existen plataformas, boletines, espacios de diálogo o redes de conocimiento? ¿Qué tipo de información escasea o no llega a quienes más la necesitan?",scale:["1 – Muy deficientes","2 – Deficientes","3 – Regulares","4 – Buenos","5 – Excelentes"]},
+  {id:"map6",label:"Capacidad de análisis estratégico colectivo",q:"¿Tiene el ecosistema la capacidad de analizar colectivamente su posición competitiva, identificar oportunidades y formular estrategias territoriales compartidas?",hint:"¿Participó alguna vez en ejercicios de prospectiva, planeación estratégica o visión compartida del territorio? ¿Existe una hoja de ruta colectiva para el ecosistema productivo biocultural de Caldas? ¿Quiénes la lideran?",scale:["1 – Nula","2 – Muy baja","3 – Emergente","4 – Desarrollada","5 – Consolidada"]},
+];
+const DIAGNOSIS_QS=[
+  {id:"d1",label:"Diagnóstico de cadenas productivas",q:"¿Cuáles son las principales brechas, cuellos de botella y oportunidades que usted identifica en las cadenas productivas regionales?",hint:"Recuerde situaciones específicas donde la cadena productiva se quiebra o pierde valor: ¿falta transformación?, ¿los productores no llegan al mercado?, ¿hay dependencia de insumos externos? Comparta también qué potencial productivo del territorio de Caldas considera que aún está desaprovechado."},
+  {id:"d2",label:"Oportunidades del ecosistema",q:"¿Qué oportunidades estratégicas —tecnológicas, de mercado, de cooperación o de política pública— identifica para fortalecer el ecosistema productivo biocultural de Caldas?",hint:"Piense en tendencias globales (bioeconomía, economía creativa, turismo sostenible), en convocatorias de financiamiento disponibles, en alianzas posibles con otras regiones o países, o en políticas públicas que podrían aprovecharse para impulsar el ecosistema."},
+  {id:"d3",label:"Necesidades urgentes del ecosistema",q:"¿Cuáles son las necesidades más urgentes que deben atenderse para mejorar la competitividad y articulación del ecosistema productivo?",hint:"¿Qué tres cosas cambiaría hoy si tuviera los recursos y el poder para hacerlo? Puede referirse a infraestructura, formación de capacidades, financiamiento, regulación, conectividad, tecnología o fortalecimiento organizacional de los actores."},
+  {id:"d4",label:"Actores clave y roles",q:"¿Quiénes son los actores más influyentes o estratégicos en el ecosistema y qué roles cumplen actualmente?",hint:"Nombre organizaciones, instituciones o personas que considera fundamentales para el funcionamiento del ecosistema. ¿Qué rol juega cada uno: liderazgo, financiamiento, conocimiento, producción, distribución? ¿Hay actores que deberían estar pero no están presentes?"},
+  {id:"d5",label:"Propuestas de mejora",q:"Desde su posición como actor del ecosistema, ¿qué acciones, proyectos o iniciativas propondría para fortalecer la productividad y la innovación regional?",hint:"Sea concreto: ¿qué haría usted o su organización?, ¿con quiénes lo haría?, ¿en qué plazo? Puede proponer tanto acciones inmediatas y de bajo costo como transformaciones estructurales de largo plazo para el ecosistema productivo biocultural de Caldas."},
+  {id:"d6",label:"Comentarios adicionales",q:"¿Desea agregar algún comentario, observación o información complementaria relevante para el diagnóstico del ecosistema productivo regional?",hint:"Este es un espacio abierto para usted. Puede incluir reflexiones personales, datos que considere relevantes, referencias a estudios o experiencias, o cualquier aspecto del ecosistema que no haya sido abordado en las preguntas anteriores y que considere importante para la investigación."},
+];
+const STEP_NAMES=["Identificación","Tipo de Actor","Tipología","Ecosistemas","Estado Actual","Mapeo & Gobernanza","Diagnóstico Final"];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const S={actorId:null,actorLabel:null,ecosystems:[],maturityScores:{},maturityComments:{},mappingScores:{},mappingComments:{},diagnosis:{}};
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('f_fecha').value=new Date().toLocaleDateString('es-CO');
+  buildDots(); buildEcos(); buildScaleQs('maturityQuestions',MATURITY_QS,'maturity');
+  buildScaleQs('mappingQuestions',MAPPING_QS,'mapping'); buildDiagQs(); updateProgress(0);
+  loadCount();
+});
+
+function loadCount(){
+  fetch(API+'/api/count').then(r=>r.json()).then(d=>{
+    const n=d.count||0;
+    document.getElementById('counterBadge').textContent=`📊 ${n} respuesta${n===1?'':'s'} registrada${n===1?'':'s'}`;
+    const ac=document.getElementById('adminCount');
+    if(ac) ac.textContent=`📊 ${n} respuesta${n===1?'':'s'} en el archivo consolidado`;
+  }).catch(()=>{
+    document.getElementById('counterBadge').textContent='📊 Servidor desconectado';
+  });
+}
+
+function buildDots(){
+  const w=document.getElementById('stepDots'); w.innerHTML='';
+  STEP_NAMES.forEach((_,i)=>{const d=document.createElement('div');d.className='step-dot'+(i===0?' active':'');d.id='dot-'+i;w.appendChild(d);});
+}
+function updateProgress(s){
+  const p=Math.round(((s+1)/7)*100);
+  document.getElementById('progressFill').style.width=p+'%';
+  document.getElementById('progressLabel').textContent=`Paso ${s+1} de 7`;
+  document.getElementById('progressCount').textContent=STEP_NAMES[s]||'';
+  document.querySelectorAll('.step-dot').forEach((d,i)=>{d.className='step-dot'+(i<s?' done':i===s?' active':'');});
+}
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  const t=document.getElementById('step-'+(n==='success'?'success':n));
+  if(t){t.classList.add('active');t.scrollIntoView({behavior:'smooth',block:'start'});}
+  if(n!=='success') updateProgress(n);
+}
+
+function buildEcos(){
+  const w=document.getElementById('ecoChips');
+  ECOSYSTEMS.forEach(eco=>{
+    const c=document.createElement('div'); c.className='chip'; c.textContent=eco; c.dataset.eco=eco;
+    c.addEventListener('click',()=>toggleEco(c,eco)); w.appendChild(c);
+  });
+}
+function toggleEco(el,eco){
+  if(el.classList.contains('active')){el.classList.remove('active');S.ecosystems=S.ecosystems.filter(e=>e!==eco);}
+  else{if(S.ecosystems.length>=3)return;el.classList.add('active');S.ecosystems.push(eco);}
+  document.getElementById('ecoCount').textContent=S.ecosystems.length;
+  document.querySelectorAll('.chip').forEach(c=>{
+    if(!c.classList.contains('active')&&S.ecosystems.length>=3)c.classList.add('locked');
+    else c.classList.remove('locked');
+  });
+}
+function selectActor(btn){
+  document.querySelectorAll('.actor-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); S.actorId=btn.dataset.actor; S.actorLabel=btn.dataset.label;
+  const info=document.getElementById('actor-info'); info.style.display='block';
+  info.innerHTML=`✓ Seleccionado: <strong>${S.actorLabel}</strong>`;
+  const sel=document.getElementById('f_typology');
+  sel.innerHTML='<option value="">— Seleccione una opción —</option>';
+  (TYPOLOGIES[S.actorId]||[]).forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  document.getElementById('typology-desc').innerHTML=`Dentro de <strong>${S.actorLabel}</strong>, seleccione la tipología que mejor describe su organización.`;
+}
+function typologyChanged(){
+  const val=document.getElementById('f_typology').value;
+  const info=document.getElementById('typology-info');
+  if(val){info.style.display='block';info.innerHTML=`✓ Tipología seleccionada: <strong>${val}</strong>`;}
+  else info.style.display='none';
+}
+
+function buildScaleQs(cid,qs,prefix){
+  const w=document.getElementById(cid);
+  qs.forEach((q,qi)=>{
+    const card=document.createElement('div'); card.className='q-card'; card.id='qcard-'+q.id;
+    const scaleHtml=q.scale.map(opt=>`<button class="scale-opt" data-qid="${q.id}" data-prefix="${prefix}" data-val="${opt}" onclick="selectScale(this)">${opt}</button>`).join('');
+    const hintText=q.hint?`💡 Orientación: ${q.hint}`:"Amplíe su respuesta con ejemplos, contexto o perspectiva personal (máx. 200 palabras)...";
+    card.innerHTML=`<div class="q-tag">${q.label}</div><div class="q-text">${q.question}</div><div class="scale-row">${scaleHtml}</div><div class="hint-box" id="hint-${q.id}" style="display:none;background:rgba(184,137,58,.08);border-left:3px solid #b8893a;padding:.55rem .85rem;border-radius:0 6px 6px 0;font-size:.78rem;color:#7a5c20;line-height:1.65;margin-bottom:.6rem;cursor:pointer;" onclick="this.style.display='none';document.getElementById('comment-${q.id}').focus()">💡 <em>${q.hint||''}</em><br><span style="font-size:.7rem;color:#b8893a;font-weight:600">↑ Clic aquí para cerrar y comenzar a escribir</span></div><textarea id="comment-${q.id}" placeholder="${hintText}" rows="3" oninput="updateWC('${q.id}','${prefix}')" onfocus="showHint('${q.id}')"></textarea><div class="wc" id="wc-${q.id}">0 / 200 palabras</div>`;
+    if(qi<qs.length-1) card.innerHTML+='<hr class="divider">';
+    w.appendChild(card);
+  });
+}
+function selectScale(btn){
+  const{qid,prefix,val}=btn.dataset;
+  document.querySelectorAll(`.scale-opt[data-qid="${qid}"]`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(prefix==='maturity') S.maturityScores[qid]=val;
+  else S.mappingScores[qid]=val;
+  document.getElementById('qcard-'+qid).classList.add('answered');
+}
+function updateWC(qid,prefix){
+  const ta=document.getElementById('comment-'+qid); const wc=document.getElementById('wc-'+qid);
+  const w=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;
+  wc.textContent=`${w} / 200 palabras${w>200?' ⚠ Límite excedido':''}`; wc.className='wc'+(w>200?' over':'');
+  if(prefix==='maturity') S.maturityComments[qid]=ta.value;
+  else S.mappingComments[qid]=ta.value;
+}
+function buildDiagQs(){
+  const w=document.getElementById('diagnosisQuestions');
+  DIAGNOSIS_QS.forEach((q,qi)=>{
+    const d=document.createElement('div'); d.className='open-q';
+    const ph=q.hint?`💡 Orientación: ${q.hint}`:"Escriba aquí su respuesta (máx. 200 palabras)...";
+    d.innerHTML=`<div class="q-label">${q.label}</div><div class="q-sub">${q.question}</div><div class="hint-diag" style="background:rgba(21,45,74,.06);border-left:3px solid #152d4a;padding:.6rem .9rem;border-radius:0 6px 6px 0;font-size:.78rem;color:#2a4a6a;line-height:1.7;margin-bottom:.65rem;"><strong>💡 Orientación:</strong> <em>${q.hint||''}</em></div><textarea id="diag-${q.id}" placeholder="Escriba aquí su respuesta (máx. 200 palabras)..." rows="4" oninput="updateWCdiag('${q.id}')"></textarea><div class="wc" id="wc-diag-${q.id}">0 / 200 palabras</div>`;
+    if(qi<DIAGNOSIS_QS.length-1) d.innerHTML+='<hr class="divider">';
+    w.appendChild(d);
+  });
+}
+function updateWCdiag(qid){
+  const ta=document.getElementById('diag-'+qid); const wc=document.getElementById('wc-diag-'+qid);
+  const w=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;
+  wc.textContent=`${w} / 200 palabras${w>200?' ⚠ Límite excedido':''}`; wc.className='wc'+(w>200?' over':'');
+  S.diagnosis[qid]=ta.value;
+}
+
+function showHint(qid){
+  const box=document.getElementById('hint-'+qid);
+  if(box) box.style.display='block';
+}
+// NAVIGATION
+function v(id){const el=document.getElementById(id);return el&&el.value.trim();}
+function goNext(step){
+  const al=document.getElementById('alert-'+step); al.classList.remove('show');
+  if(step===0&&(!v('f_nombre')||!v('f_email')||!v('f_organizacion'))){al.classList.add('show');return;}
+  if(step===1&&!S.actorId){al.classList.add('show');return;}
+  if(step===2&&!document.getElementById('f_typology').value){al.classList.add('show');return;}
+  if(step===3&&S.ecosystems.length===0){al.classList.add('show');return;}
+  if(step===4){
+    if(!MATURITY_QS.every(q=>S.maturityScores[q.id])){al.classList.add('show');return;}
+    MATURITY_QS.forEach(q=>{const ta=document.getElementById('comment-'+q.id);if(ta)S.maturityComments[q.id]=ta.value;});
+  }
+  if(step===5){
+    if(!MAPPING_QS.every(q=>S.mappingScores[q.id])){al.classList.add('show');return;}
+    MAPPING_QS.forEach(q=>{const ta=document.getElementById('comment-'+q.id);if(ta)S.mappingComments[q.id]=ta.value;});
+  }
+  showStep(step+1);
+}
+function goPrev(step){showStep(step-1);}
+
+// SUBMIT → SEND TO SERVER
+async function submitForm(){
+  DIAGNOSIS_QS.forEach(q=>{const ta=document.getElementById('diag-'+q.id);if(ta)S.diagnosis[q.id]=ta.value;});
+
+  const payload={
+    nombre:v('f_nombre'), cargo:v('f_cargo'), email:v('f_email'), telefono:v('f_telefono'),
+    organizacion:v('f_organizacion'), ciudad:v('f_ciudad'), departamento:v('f_departamento'),
+    actorLabel:S.actorLabel, typology:document.getElementById('f_typology').value,
+    ecosystems:S.ecosystems,
+    maturityScores:S.maturityScores, maturityComments:S.maturityComments,
+    mappingScores:S.mappingScores,   mappingComments:S.mappingComments,
+    diagnosis:S.diagnosis,
+  };
+
+  document.getElementById('sendingOverlay').classList.add('show');
+
+  try {
+    const res  = await fetch(API+'/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data = await res.json();
+    document.getElementById('sendingOverlay').classList.remove('show');
+    if(data.ok){
+      document.getElementById('successName').textContent=v('f_nombre')||'participante';
+      document.getElementById('successSeq').textContent=`Respuesta N° ${String(data.seq).padStart(3,'0')} guardada ✓`;
+      document.getElementById('progressWrap').style.display='none';
+      showStep('success');
+      loadCount();
+    } else {
+      alert('Error al guardar: '+data.error);
+    }
+  } catch(err){
+    document.getElementById('sendingOverlay').classList.remove('show');
+    alert('No se pudo conectar con el servidor. Verifique que el servidor Python esté en ejecución.\n\n'+err.message);
+  }
+}
+function resetForm(){location.reload();}
+</script>
+</body>
+</html>
